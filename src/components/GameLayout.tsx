@@ -4,25 +4,21 @@ import CoinTray from "../components/CoinTray";
 import DropZone from "../components/DropZone";
 import Header from "../components/Header";
 import { TicketBurstLayer } from "../components/TicketBurstLayer";
-import { useSound, startLoopingSound, stopLoopingSound } from "../hooks/useSound";
+import Confetti from "react-confetti";
+import { useSound } from "../hooks/useSound";
 import { createTicketBursts } from "../lib/ticketBurst";
 import type { TicketBurstItem } from "../lib/ticketBurst";
 
 const SUCCESS_SOUND = "/sounds/success1.mp3";
 const ERROR_SOUND = "/sounds/error.mp3";
 
-/** Continuous ticket-machine loop during burst (swap file for dedicated SFX) */
-const TICKET_LOOP_VOLUME = 0.42;
-/** Matches longest ticket (delay + animation); then clear DOM + stop sound */
-const TICKET_BURST_CLEAR_MS = 4700;
-const MIN_AUTO_RESET_MS = 5000;
-const AUTO_RESET_SPREAD_MS = 2000;
-const MIN_TICKET_BURST_COUNT = 30;
-const TICKET_BURST_SPREAD_COUNT = 21;
-
 function getAutoResetDelayMs() {
-  return MIN_AUTO_RESET_MS + Math.floor(Math.random() * (AUTO_RESET_SPREAD_MS + 1));
+  return 5000;
 }
+
+const TICKET_BURST_CLEAR_MS = 4700;
+const MIN_TICKET_BURST_COUNT = 80;
+const TICKET_BURST_SPREAD_COUNT = 40;
 
 function getTicketBurstCount() {
   return MIN_TICKET_BURST_COUNT + Math.floor(Math.random() * TICKET_BURST_SPREAD_COUNT);
@@ -132,6 +128,20 @@ export default function GameLayout() {
     setWrongFeedbackTick(0);
   };
 
+  const handleUndo = () => {
+    if (droppedItems.length === 0) return;
+    const lastItem = droppedItems[droppedItems.length - 1];
+    setDroppedItems((prev) => prev.slice(0, -1));
+    setTotal((prev) => prev - lastItem.value);
+
+    // Clear error state if undoing after a mistake
+    if (status === "wrong") {
+      setStatus("idle");
+      setWrongFeedbackTick(0);
+      clearAutoResetSchedule();
+    }
+  };
+
   return (
     <div className="w-screen h-screen bg-black flex items-center justify-center">
       <div className="relative aspect-video h-full max-w-full">
@@ -148,7 +158,7 @@ export default function GameLayout() {
             status={status}
             wrongFeedbackTick={wrongFeedbackTick}
             onCheck={handleCheck}
-            onReset={handleReset}
+            onUndo={handleUndo}
             onDropItem={handleDropItem}
           />
 
@@ -156,6 +166,7 @@ export default function GameLayout() {
         </div>
 
         <TicketBurstLayer items={ticketBursts} />
+        {ticketBursts.length > 0 && <Confetti width={window.innerWidth} height={window.innerHeight} recycle={false} numberOfPieces={300} />}
       </div>
     </div>
   );

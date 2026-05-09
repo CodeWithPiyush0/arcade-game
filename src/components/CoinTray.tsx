@@ -9,8 +9,6 @@ import twentyRupee from "../assets/Twenty_Rupee.png";
 import twentyRupeeNote from "../assets/Twenty_Rupee_Note.png";
 import twoRupee from "../assets/Two_Rupee.png";
 
-const PICKUP_COIN_SOUND = "/sounds/coin.mp3"; // NEW: soft pickup on drag start
-const PICKUP_NOTE_SOUND = "/sounds/note.mp3"; // NEW: soft pickup on drag start
 
 const moneyItems = [
   { type: "coin", value: 1, alt: "One rupee", className: "money-tray__coin", src: oneRupee },
@@ -24,8 +22,6 @@ const moneyItems = [
 ];
 
 export default function CoinTray() {
-  const playPickupCoin = useSound(PICKUP_COIN_SOUND, 0.58); // NEW: user gesture — drag start only
-  const playPickupNote = useSound(PICKUP_NOTE_SOUND, 0.58); // NEW: user gesture — drag start only
 
   // NEW: drag UX — which tray cell is active + cleanup for custom drag preview
   const [draggingKey, setDraggingKey] = useState<string | null>(null);
@@ -56,11 +52,6 @@ export default function CoinTray() {
             onDragStart={(e) => {
               e.dataTransfer.setData("item", JSON.stringify(item));
               e.dataTransfer.effectAllowed = "copy";
-              if (item.type === "note") {
-                playPickupNote();
-              } else {
-                playPickupCoin();
-              }
               setDraggingKey(item.alt);
 
               // NEW: custom drag preview (semi-transparent + cyan glow via CSS class)

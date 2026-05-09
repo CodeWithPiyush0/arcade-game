@@ -554,15 +554,14 @@ body {
 
 .ticket-burst__ticket {
   position: absolute;
-  /* EXACT ORIGIN: machine ticket slot (small yellow rectangle, bottom-right) */
-  right: clamp(6px, 1.25vw, 22px);
-  bottom: clamp(18px, 3.4vh, 42px);
+  left: 50%;
+  bottom: -50px;
   width: clamp(64px, 8.5vw, 132px);
   height: auto;
   object-fit: contain;
-  transform-origin: 92% 96%;
+  transform-origin: center center;
   will-change: transform, opacity;
-  animation: ticket-burst-machine 2.25s cubic-bezier(0.2, 0.86, 0.22, 1.04) forwards;
+  animation: ticket-burst-machine 4.5s cubic-bezier(0.2, 0.86, 0.22, 1.04) forwards;
   filter: brightness(var(--tb-brightness, 1)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
 }
 
@@ -665,7 +664,5 @@ body {
 
   .ticket-burst__ticket {
     width: clamp(50px, 12.5vw, 86px);
-    right: clamp(4px, 1vw, 14px);
-    bottom: clamp(12px, 2.6vh, 26px);
   }
 }

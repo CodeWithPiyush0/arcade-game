@@ -2,44 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSound } from "../hooks/useSound";
 import decorativeElement from "../assets/Decorative_element.svg";
 import checkBtn from "../assets/Check_Btn.svg"; // NEW
-import resetBtn from "../assets/Reset_Btn.svg"; // NEW
-
-const ARROW_CELLS = new Set([
-  "0-2",
-  "0-3",
-  "0-4",
-  "1-2",
-  "1-3",
-  "1-4",
-  "2-2",
-  "2-3",
-  "2-4",
-  "3-2",
-  "3-3",
-  "3-4",
-  "4-2",
-  "4-3",
-  "4-4",
-  "5-2",
-  "5-3",
-  "5-4",
-  "6-0",
-  "6-1",
-  "6-2",
-  "6-3",
-  "6-4",
-  "6-5",
-  "6-6",
-  "7-1",
-  "7-2",
-  "7-3",
-  "7-4",
-  "7-5",
-  "8-2",
-  "8-3",
-  "8-4",
-  "9-3",
-]);
+import undoBtn from "../assets/Undo_btn.svg"; // NEW
 
 const DROP_COIN_SOUND = "/sounds/drop.mp3"; // NEW: coin landed
 const DROP_NOTE_SOUND = "/sounds/note.mp3"; // NEW: note landed
@@ -51,14 +14,14 @@ export default function DropZone({
   wrongFeedbackTick,
   onDropItem,
   onCheck,
-  onReset,
+  onUndo,
 }: {
   items: { src: string; className: string }[];
   status: string;
   wrongFeedbackTick: number;
   onDropItem: (item: { src: string; className: string; value: number; type?: string; alt?: string }) => void;
   onCheck: () => void;
-  onReset: () => void;
+  onUndo: () => void;
 }) {
   const playDropCoin = useSound(DROP_COIN_SOUND, 0.65); // NEW: successful coin drop
   const playDropNote = useSound(DROP_NOTE_SOUND, 0.65); // NEW: successful note drop
@@ -125,46 +88,7 @@ export default function DropZone({
       {/* SHOW ONLY WHEN EMPTY */}
       {items.length === 0 && (
         <div className="drop-zone__empty">
-          <div className="pixel-arrow" aria-hidden="true">
-            {Array.from({ length: 10 }).map((_, row) =>
-              Array.from({ length: 7 }).map((__, col) => (
-                <span
-                  className={ARROW_CELLS.has(`${row}-${col}`) ? "is-on" : ""}
-                  key={`${row}-${col}`}
-                />
-              )),
-            )}
-          </div>
-          <div className="drop-zone__label">
-            <svg
-              aria-hidden="true"
-              fill="none"
-              height="21"
-              viewBox="0 0 24 24"
-              width="21"
-            >
-              <path
-                d="M8 11V7.5a1.5 1.5 0 0 1 3 0V11"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-              <path
-                d="M11 10V6.5a1.5 1.5 0 0 1 3 0V11"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-              <path
-                d="M14 11V8a1.5 1.5 0 0 1 3 0v5.5c0 4-2.5 6.5-6.5 6.5H10c-2.4 0-4.2-1.1-5.3-3.1L3 13.8a1.6 1.6 0 0 1 2.7-1.7L7 14"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              />
-            </svg>
+          <div className="drop-zone__label" style={{ opacity: 0.5 }}>
             <span>DRAG & DROP MONEY HERE</span>
           </div>
         </div>
@@ -173,14 +97,36 @@ export default function DropZone({
       {/* Dropped items only when present — avoids empty spacer shifting the placeholder */}
       {items.length > 0 && (
         <div className="drop-zone__items">
-          {items.map((item, i) => (
-            <img
-              key={i}
-              src={item.src}
-              className={`${item.className} ${bounceIndex === i ? "drop-zone__item--drop-bounce" : ""}`}
-              alt=""
-            />
-          ))}
+          {(() => {
+            // Group identical items by their source image so they can be stacked
+            const grouped = items.reduce((acc, item, originalIndex) => {
+              let group = acc.find((g) => g.src === item.src);
+              if (!group) {
+                group = { src: item.src, elements: [] };
+                acc.push(group);
+              }
+              group.elements.push({ item, originalIndex });
+              return acc;
+            }, [] as { src: string; elements: { item: typeof items[0]; originalIndex: number }[] }[]);
+
+            return grouped.map((group, groupIdx) => (
+              <div key={groupIdx} style={{ display: "flex", flexDirection: "row", position: "relative" }}>
+                {group.elements.map((el, idx) => (
+                  <img
+                    key={el.originalIndex}
+                    src={el.item.src}
+                    className={`${el.item.className} ${bounceIndex === el.originalIndex ? "drop-zone__item--drop-bounce" : ""}`}
+                    alt=""
+                    style={{
+                      marginLeft: idx > 0 ? (el.item.className.includes("note") ? "-80px" : "-35px") : "0px",
+                      zIndex: idx,
+                      position: "relative"
+                    }}
+                  />
+                ))}
+              </div>
+            ));
+          })()}
         </div>
       )}
 
@@ -195,10 +141,10 @@ export default function DropZone({
             style={{ cursor: "pointer" }}
           />
           <img
-            src={resetBtn}
+            src={undoBtn}
             onClick={() => {
-              playResetSoft(); // NEW: soft optional reset cue
-              onReset();
+              playResetSoft(); // NEW: soft optional undo cue
+              onUndo();
             }}
             style={{ cursor: "pointer" }}
           />

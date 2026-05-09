@@ -26,24 +26,20 @@ export type TicketBurstItem = {
 /** 30–50 tickets: aggressive full-screen payout from the bottom-right slot */
 export function createTicketBursts(count: number): TicketBurstItem[] {
   return Array.from({ length: count }, (_, i) => {
-    // Heavily bias to the left so tickets travel across the full width.
-    const bucket = Math.random();
-    let driftX = -220 - Math.random() * 340; // right/center region
-    if (bucket < 0.6) driftX = -620 - Math.random() * 520; // center/left
-    if (bucket < 0.25) driftX = -1120 - Math.random() * 520; // hard left edge
-    if (bucket > 0.9) driftX = 60 + Math.random() * 220; // some right-side tickets
+    // Explode from center bottom: spread widely left and right to cover the whole screen
+    const driftX = -1200 + Math.random() * 2400; // wider spread
 
     return {
       id: `tb-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 9)}`,
       driftX,
-      settleY: 110 + Math.random() * 220,
-      liftY: 170 + Math.random() * 220,
-      spawnJitterX: -10 + Math.random() * 20,
-      spawnJitterY: -8 + Math.random() * 16,
-      rotation: (Math.random() - 0.5) * 140,
-      delay: i * 52 + Math.random() * 240,
+      settleY: window.innerHeight ? window.innerHeight + 200 : 1200,
+      liftY: 600 + Math.random() * 800, // shoot even higher to cover more vertical space
+      spawnJitterX: -40 + Math.random() * 80,
+      spawnJitterY: -20 + Math.random() * 40,
+      rotation: (Math.random() - 0.5) * 360,
+      delay: Math.random() * 400,
       brightness: 0.82 + Math.random() * 0.24,
-      scale: 0.95 + Math.random() * 0.75,
+      scale: 1.5 + Math.random() * 1.0, // MUCH larger tickets
       src: TICKET_SOURCES[Math.floor(Math.random() * TICKET_SOURCES.length)]!,
     };
   });
