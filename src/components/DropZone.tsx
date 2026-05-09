@@ -41,7 +41,8 @@ const ARROW_CELLS = new Set([
   "9-3",
 ]);
 
-const DROP_SOUND = "/sounds/drop.mp3"; // NEW: coin/note landed
+const DROP_COIN_SOUND = "/sounds/drop.mp3"; // NEW: coin landed
+const DROP_NOTE_SOUND = "/sounds/note.mp3"; // NEW: note landed
 const CLICK_SOUND = "/sounds/click.mp3"; // NEW: check button confirm beep
 
 export default function DropZone({
@@ -59,7 +60,8 @@ export default function DropZone({
   onCheck: () => void;
   onReset: () => void;
 }) {
-  const playDrop = useSound(DROP_SOUND, 0.65); // NEW: successful drop only
+  const playDropCoin = useSound(DROP_COIN_SOUND, 0.65); // NEW: successful coin drop
+  const playDropNote = useSound(DROP_NOTE_SOUND, 0.65); // NEW: successful note drop
   const playClick = useSound(CLICK_SOUND, 0.62); // NEW: check button
   const playResetSoft = useSound(CLICK_SOUND, 0.42); // NEW: optional quieter reuse
 
@@ -105,8 +107,12 @@ export default function DropZone({
         setIsDragOver(false);
         const data = e.dataTransfer.getData("item");
         if (data) {
-          playDrop(); // NEW: clink only when payload valid (user drop gesture)
           const parsed = JSON.parse(data);
+          if (parsed.type === "note") {
+            playDropNote();
+          } else {
+            playDropCoin();
+          }
           onDropItem(parsed);
         }
       }}
@@ -184,7 +190,6 @@ export default function DropZone({
           <img
             src={checkBtn}
             onClick={() => {
-              playClick(); // NEW: arcade confirm before logic runs
               onCheck();
             }}
             style={{ cursor: "pointer" }}

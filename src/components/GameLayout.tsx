@@ -12,7 +12,6 @@ const SUCCESS_SOUND = "/sounds/success1.mp3";
 const ERROR_SOUND = "/sounds/error.mp3";
 
 /** Continuous ticket-machine loop during burst (swap file for dedicated SFX) */
-const TICKET_DISPENSE_LOOP_SRC = "/sounds/ticket_dispense.mp3";
 const TICKET_LOOP_VOLUME = 0.42;
 /** Matches longest ticket (delay + animation); then clear DOM + stop sound */
 const TICKET_BURST_CLEAR_MS = 4700;
@@ -69,7 +68,6 @@ export default function GameLayout() {
       if (autoResetRef.current !== null) {
         window.clearTimeout(autoResetRef.current);
       }
-      stopLoopingSound(TICKET_DISPENSE_LOOP_SRC);
     },
     [],
   );
@@ -79,7 +77,6 @@ export default function GameLayout() {
       window.clearTimeout(ticketBurstClearRef.current);
       ticketBurstClearRef.current = null;
     }
-    stopLoopingSound(TICKET_DISPENSE_LOOP_SRC);
   };
 
   const clearAutoResetSchedule = () => {
@@ -108,11 +105,9 @@ export default function GameLayout() {
     if (total === target) {
       clearTicketBurstSchedule();
       setStatus("correct");
-      startLoopingSound(TICKET_DISPENSE_LOOP_SRC, TICKET_LOOP_VOLUME);
       const count = getTicketBurstCount();
       setTicketBursts(createTicketBursts(count));
       ticketBurstClearRef.current = window.setTimeout(() => {
-        stopLoopingSound(TICKET_DISPENSE_LOOP_SRC);
         setTicketBursts([]);
         ticketBurstClearRef.current = null;
       }, TICKET_BURST_CLEAR_MS);
